@@ -56,7 +56,7 @@ public class Project : EntityBase, IAggregateRoot
   {
     if (string.IsNullOrEmpty(newName))
     {
-      return new ArgumentException("Name is required"));
+      return new ArgumentException("Name is required");
     }
 
     Name = newName;
