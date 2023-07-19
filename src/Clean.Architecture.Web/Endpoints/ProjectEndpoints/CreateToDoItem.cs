@@ -33,8 +33,8 @@ public class CreateToDoItem : EndpointBaseAsync
     CancellationToken cancellationToken = new())
   {
     return await GetProject()
-      .Bind(CreateToDoItemAndDomainEvents)
-      .Bind(SaveChangesAndFireDomainEventsAsync)
+      .Bind(CreateToDoItem)
+      .Bind(SaveChangesAsync)
       .Match(
         onSuccess: _ => Created(GetProjectByIdRequest.BuildRoute(request.ProjectId), null),
         onFailure: ErrorHandler);
@@ -76,7 +76,7 @@ public class CreateToDoItem : EndpointBaseAsync
 
     async Task<Result<Project, Exception>> SaveChangesAsync(Project entity)
     {
-      await _repository.UpdateAsync(entity);
+      await _repository.UpdateAsync(entity, cancellationToken);
 
       return entity;
     }
@@ -105,25 +105,23 @@ public class CreateToDoItem : EndpointBaseAsync
         newItem.AddContributor(request.ContributorId.Value);
       }
 
-      return entity.AddItemToNewProject(newItem);
+      return entity.AddItemToProject(newItem);
     }
 
-    async Task<Result<Project, Exception>> SaveChangesAndFireDomainEventsAsync(ExecutionContext<Project> context)
+    Result<ExecutionContext<Project>, Exception> FireDomainEventsAsync(ExecutionContext<Project> context)
     {
-      await _repository.UpdateAsync(context.Entity);
-
       foreach (var domainEvent in context.DomainEvents)
       {
         //await _mediator.Publish(domainEvent);
       }
 
-      return context.Entity;
+      return context;
     }
-
 
     //return await GetProject()
     //  .Bind(CreateToDoItemAndDomainEvents)
-    //  .Bind(SaveChangesAndFireDomainEventsAsync)
+    //  .Bind(SaveChangesAsync)
+    //  .Bind(FireDomainEventsAsync)
     //  .Match(
     //    onSuccess: _ => Created(GetProjectByIdRequest.BuildRoute(request.ProjectId), null),
     //    onFailure: ErrorHandler);

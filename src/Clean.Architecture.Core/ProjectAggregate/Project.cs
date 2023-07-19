@@ -88,7 +88,7 @@ public class Project : EntityBase, IAggregateRoot
     base.RegisterDomainEvent(newItemAddedEvent);
   }
 
-  public Result<ExecutionContext<Project>, Exception> AddItemToNewProject(ToDoItem newItem)
+  public Result<ExecutionContext<Project>, Exception> AddItemToProject(ToDoItem newItem)
   {
     if (newItem is null)
     {
