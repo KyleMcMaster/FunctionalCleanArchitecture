@@ -31,7 +31,7 @@ public class Update : EndpointBaseAsync
     UpdateProjectRequest request,
       CancellationToken cancellationToken = new())
   {
-    var result = await Validate()
+    return await Validate()
       .Bind(GetProject)
       .Bind(UpdateName)
       .Bind(SaveChangesAsync)
@@ -39,7 +39,9 @@ public class Update : EndpointBaseAsync
         onSuccess: project => Ok(new UpdateProjectResponse(new ProjectRecord(project.Id, project.Name))),
         onFailure: ErrorHandler);
 
-    return result;
+
+
+
 
     UnitResult<Exception> Validate()
     {

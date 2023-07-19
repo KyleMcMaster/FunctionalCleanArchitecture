@@ -1,12 +1,15 @@
 ﻿using Ardalis.ApiEndpoints;
+using Ardalis.GuardClauses;
+using Clean.Architecture.Core.Adapters;
 using Clean.Architecture.Core.ProjectAggregate;
 using Clean.Architecture.Core.ProjectAggregate.Specifications;
 using Clean.Architecture.SharedKernel.Interfaces;
+using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Clean.Architecture.Web.Endpoints.ProjectEndpoints;
-
+#pragma warning disable CS8321 // Local function is declared but never used
 public class CreateToDoItem : EndpointBaseAsync
   .WithRequest<CreateToDoItemRequest>
   .WithActionResult
@@ -29,26 +32,101 @@ public class CreateToDoItem : EndpointBaseAsync
     CreateToDoItemRequest request,
     CancellationToken cancellationToken = new())
   {
-    var spec = new ProjectByIdWithItemsSpec(request.ProjectId);
-    var entity = await _repository.FirstOrDefaultAsync(spec, cancellationToken);
-    if (entity == null)
+    return await GetProject()
+      .Bind(CreateToDoItemAndDomainEvents)
+      .Bind(SaveChangesAndFireDomainEventsAsync)
+      .Match(
+        onSuccess: _ => Created(GetProjectByIdRequest.BuildRoute(request.ProjectId), null),
+        onFailure: ErrorHandler);
+
+
+
+
+    async Task<Result<Project, Exception>> GetProject()
     {
-      return NotFound();
+      var spec = new ProjectByIdWithItemsSpec(request.ProjectId);
+      var entity = await _repository.FirstOrDefaultAsync(spec, cancellationToken);
+
+      if (entity is null)
+      {
+        return Result.Failure<Project, Exception>(new NotFoundException("Id", "Project"));
+      }
+
+      return entity;
     }
 
-    var newItem = new ToDoItem()
+
+    Result<Project, Exception> CreateToDoItem(Project entity)
     {
-      Title = request.Title!,
-      Description = request.Description!
-    };
+      var newItem = new ToDoItem
+      {
+        Title = request.Title!,
+        Description = request.Description!
+      };
 
-    if(request.ContributorId.HasValue) 
-    { 
-      newItem.AddContributor(request.ContributorId.Value);
+      if (request.ContributorId.HasValue)
+      {
+        newItem.AddContributor(request.ContributorId.Value);
+      }
+
+      entity.AddItem(newItem);
+
+      return entity;
     }
-    entity.AddItem(newItem);
-    await _repository.UpdateAsync(entity);
 
-    return Created(GetProjectByIdRequest.BuildRoute(request.ProjectId), null);
+    async Task<Result<Project, Exception>> SaveChangesAsync(Project entity)
+    {
+      await _repository.UpdateAsync(entity);
+
+      return entity;
+    }
+
+    ActionResult ErrorHandler(Exception ex) =>
+      ex switch
+      {
+        ArgumentNullException => BadRequest(ex.Message),
+        NotFoundException => NotFound(ex.Message),
+        _ => Problem(ex.Message)
+      };
+
+
+
+
+    Result<ExecutionContext<Project>, Exception> CreateToDoItemAndDomainEvents(Project entity)
+    {
+      var newItem = new ToDoItem
+      {
+        Title = request.Title!,
+        Description = request.Description!
+      };
+
+      if (request.ContributorId.HasValue)
+      {
+        newItem.AddContributor(request.ContributorId.Value);
+      }
+
+      return entity.AddItemToNewProject(newItem);
+    }
+
+    async Task<Result<Project, Exception>> SaveChangesAndFireDomainEventsAsync(ExecutionContext<Project> context)
+    {
+      await _repository.UpdateAsync(context.Entity);
+
+      foreach (var domainEvent in context.DomainEvents)
+      {
+        //await _mediator.Publish(domainEvent);
+      }
+
+      return context.Entity;
+    }
+
+
+    //return await GetProject()
+    //  .Bind(CreateToDoItemAndDomainEvents)
+    //  .Bind(SaveChangesAndFireDomainEventsAsync)
+    //  .Match(
+    //    onSuccess: _ => Created(GetProjectByIdRequest.BuildRoute(request.ProjectId), null),
+    //    onFailure: ErrorHandler);
   }
 }
+#pragma warning restore CS8321 // Local function is declared but never used

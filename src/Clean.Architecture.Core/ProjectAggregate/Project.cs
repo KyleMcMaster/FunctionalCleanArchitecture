@@ -1,4 +1,5 @@
 ﻿using Ardalis.GuardClauses;
+using Clean.Architecture.Core.Adapters;
 using Clean.Architecture.Core.ProjectAggregate.Events;
 using Clean.Architecture.SharedKernel;
 using Clean.Architecture.SharedKernel.Interfaces;
@@ -37,7 +38,7 @@ public class Project : EntityBase, IAggregateRoot
   private Project(string name, PriorityStatus priority, IEnumerable<ToDoItem> toDoItems, IEnumerable<DomainEventBase> domainEvents)
   {
     _items.AddRange(toDoItems);
-    Name = Guard.Against.NullOrEmpty(name, nameof(name));
+    Name = name;
     Priority = priority;
 
     foreach (var domainEvent in domainEvents)
@@ -87,7 +88,7 @@ public class Project : EntityBase, IAggregateRoot
     base.RegisterDomainEvent(newItemAddedEvent);
   }
 
-  public Result<Project, ArgumentException> AddItemToNewProject(ToDoItem newItem)
+  public Result<ExecutionContext<Project>, Exception> AddItemToNewProject(ToDoItem newItem)
   {
     if (newItem is null)
     {
@@ -98,11 +99,11 @@ public class Project : EntityBase, IAggregateRoot
 
     var newItemAddedEvent = new NewItemAddedEvent(this, newItem);
 
-    var project = new Project(Name, Priority, items, new[] { newItemAddedEvent })
+    var project = new Project(Name, Priority, items, Enumerable.Empty<DomainEventBase>())
     {
       Id = Id,
     };
 
-    return project;
+    return new ExecutionContext<Project>(project, new[] { newItemAddedEvent });
   }
 }
