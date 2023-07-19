@@ -29,7 +29,7 @@ public class EfRepositoryUpdate : BaseEfRepoTestFixture
     }
     Assert.NotSame(project, newProject);
     var newName = Guid.NewGuid().ToString();
-    newProject.UpdateName(newName);
+    newProject.UpdateNameWithGuard(newName);
 
     // Update the item
     await repository.UpdateAsync(newProject);
