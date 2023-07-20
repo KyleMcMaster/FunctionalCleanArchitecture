@@ -12,6 +12,7 @@
     <PackageReference Include="Ardalis.SmartEnum" />
     <PackageReference Include="Ardalis.Specification" />
     <PackageReference Include="Autofac" />
+    <PackageReference Include="CSharpFunctionalExtensions" />
     <PackageReference Include="MediatR" />
   </ItemGroup>
 
