@@ -58,8 +58,18 @@ Although not a goal specifically, refactoring to functions as the unit of progra
   - opinions?
 
 
-# Randomness
+## Randomness
 [F# goodness](https://github.com/NitroDevs/FShopOnWeb/blob/main/src/Microsoft.eShopWeb.Web/Home/Home.Page.fs)
 [Currying and Uncurrying](https://medium.com/@adambene/currying-in-javascript-es6-540d2ad09400)
 [Principles of Functional Programming](https://dev.to/jamesrweb/principles-of-functional-programming-4b7c)
 [Functional programming principles](https://medium.com/@kumbhar.pradnya/functional-programming-principles-6f59bc6764ff)
+
+## Resources
+
+[Title](https://github.com/vkhorikov/CSharpFunctionalExtensions)
+[Title](https://www.pluralsight.com/authors/vladimir-khorikov)
+[Title](https://github.com/ardalis/CleanArchitecture/blob/main/src/Clean.Architecture.Web/Endpoints/ProjectEndpoints/GetById.cs)
+[Title](https://en.wikipedia.org/wiki/Monad_(functional_programming))
+[Title](https://ericlippert.com/category/monads/page/2/)
+[Title](https://www.pluralsight.com/courses/functional-architecture-fsharp)
+[Title](https://github.com/ardalis/Result/blob/main/sample/Ardalis.Result.Sample.Core/Services/WeatherService.cs#L84)

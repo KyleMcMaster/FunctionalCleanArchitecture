@@ -64,19 +64,16 @@ public class Project : EntityBase, IAggregateRoot
     return this;
   }
 
-  public Result<Project, Exception> CreateProjectWithUpdatedName(string newName)
+  public Project CreateProjectWithUpdatedName(string newName)
   {
-    if (string.IsNullOrEmpty(newName))
-    {
-      return new ArgumentException("Cannot update Project.Name with null or empty value");
-    }
+    // abbreviating validation for simplicity
 
-    var project = new Project(newName, Priority, _items, DomainEvents)
+    var newProject = new Project(newName, otherProperties)
     {
       Id = Id,
     };
 
-    return project;
+    return newProject;
   }
 
   public void AddItem(ToDoItem newItem)
